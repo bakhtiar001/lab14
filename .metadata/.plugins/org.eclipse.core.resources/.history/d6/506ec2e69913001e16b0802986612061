@@ -1,0 +1,55 @@
+package client.app;
+
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
+public class TCPCustomerClientApp {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // Server information
+            int serverPortNo = 8088;
+            InetAddress serverAddress = InetAddress.getLocalHost();
+
+            // 1. Connect to the remote machine
+            Socket socket = new Socket(serverAddress, serverPortNo);
+
+            // Create stream to send request
+            OutputStream os = socket.getOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(os);
+
+            // 2. Send customer names to the server
+            List<String> customerNames = new ArrayList<>();
+            customerNames.add("John Doe"); // Full name
+            customerNames.add("Mary"); // Partial name
+            customerNames.add("Alex Smith"); // Partial name
+            customerNames.add("Non-existing Customer"); // Non-existing customer
+
+            oos.writeObject(customerNames);
+            System.out.println("Requesting customer information\n");
+
+            // Create stream to receive response from the server
+            ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+
+            // 3. Read response from the server - cast object
+            List<Customer> customers = (List<Customer>) ois.readObject();
+
+            // 4. Process response - display customer information
+            CustomerViewer customerViewer = new CustomerViewer();
+            customerViewer.displayCustomers(customers);
+
+            // Close the socket
+            socket.close();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+}

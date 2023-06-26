@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+    <fullyQualifiedTypeName name="server.controller.CustomerDataManager"/>
+    <fullyQualifiedTypeName name="javax.net.ServerSocketFactory"/>
+    <fullyQualifiedTypeName name="model.Customer"/>
+    <fullyQualifiedTypeName name="client.view.CustomerViewer"/>
+</qualifiedTypeNameHistroy>

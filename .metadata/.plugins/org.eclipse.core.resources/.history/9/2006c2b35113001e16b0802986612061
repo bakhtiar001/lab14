@@ -1,0 +1,66 @@
+package server.app;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import server.controller.CustomerDataManager;
+
+public class TCPServerSideApp {
+    private static final int PORT = 8080;
+
+    private static final Logger logger = Logger.getLogger(TCPServerSideApp.class.getName());
+
+    public static void main(String[] args) {
+        logger.info("TCPServerSideApp: Starting the TCP server-side application.");
+
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            logger.info("TCPServerSideApp: Server started and listening on port " + PORT);
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                logger.info("TCPServerSideApp: Accepted a new client connection.");
+
+                // Handle the client request in a separate thread
+                Thread clientThread = new Thread(() -> handleClientRequest(clientSocket));
+                clientThread.start();
+            }
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "TCPServerSideApp: An error occurred in the server.", e);
+        }
+
+        logger.info("TCPServerSideApp: End of program.");
+    }
+
+    private static void handleClientRequest(Socket clientSocket) {
+        try (ObjectInputStream inputStream = new ObjectInputStream(clientSocket.getInputStream());
+             ObjectOutputStream outputStream = new ObjectOutputStream(clientSocket.getOutputStream())) {
+
+            // Read the customer name from the client
+            String customerName = (String) inputStream.readObject();
+            logger.info("TCPServerSideApp: Received customer name from client: " + customerName);
+
+            // Search for the customer by name (assumes you have the CustomerDataManager class)
+            CustomerDataManager dataManager = new CustomerDataManager();
+            Customer customer = dataManager.searchCustomerByName(customerName);
+
+            // Send the customer object back to the client
+            outputStream.writeObject(customer);
+            logger.info("TCPServerSideApp: Sent customer object to client.");
+
+        } catch (IOException | ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "TCPServerSideApp: An error occurred while handling the client request.", e);
+        } finally {
+            try {
+                clientSocket.close();
+                logger.info("TCPServerSideApp: Closed the client connection.");
+            } catch (IOException e) {
+                logger.log(Level.SEVERE, "TCPServerSideApp: An error occurred while closing the client connection.", e);
+            }
+        }
+    }
+}

@@ -1,0 +1,58 @@
+package client.app;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class TCPClientSideApp {
+    private static final String SERVER_IP = "localhost";
+    private static final int SERVER_PORT = 8080;
+
+    private static final Logger logger = Logger.getLogger(TCPClientSideApp.class.getName());
+
+    public static void main(String[] args) {
+        logger.info("TCPClientSideApp: Starting the TCP client-side application.");
+
+        try (Socket socket = new Socket(SERVER_IP, SERVER_PORT);
+             ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())) {
+
+            // Send customer names to the server
+            sendCustomerName(outputStream, "John Doe"); // Full name
+            sendCustomerName(outputStream, "Alice"); // Partial name
+            sendCustomerName(outputStream, "Bob Smith"); // Partial name
+            sendCustomerName(outputStream, "Non-Existing Customer"); // Non-existing customer
+
+            // Receive and display customer objects from the server
+            displayCustomerDetails(inputStream);
+            displayCustomerDetails(inputStream);
+            displayCustomerDetails(inputStream);
+            displayCustomerDetails(inputStream);
+
+        } catch (IOException e) {
+            logger.log(Level.SEVERE, "TCPClientSideApp: An error occurred in the client.", e);
+        }
+
+        logger.info("TCPClientSideApp: End of program.");
+    }
+
+    private static void sendCustomerName(ObjectOutputStream outputStream, String customerName) throws IOException {
+        outputStream.writeObject(customerName);
+        logger.info("TCPClientSideApp: Sent customer name to the server: " + customerName);
+    }
+
+    private static void displayCustomerDetails(ObjectInputStream inputStream) throws IOException, ClassNotFoundException {
+        Customer customer = (Customer) inputStream.readObject();
+
+        if (customer != null) {
+            logger.info("TCPClientSideApp: Received customer object from the server.");
+            logger.info("Customer ID: " + customer.getCustomerID());
+            logger.info("Customer Name: " + customer.getCustomerName());
+        } else {
+            logger.info("TCPClientSideApp: Customer not found.");
+        }
+    }
+}
